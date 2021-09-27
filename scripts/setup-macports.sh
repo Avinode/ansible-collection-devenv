@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 
 #set -o xtrace
 set -o errexit
@@ -68,3 +68,6 @@ hash -r
 log 'Running MacPorts selfupdate/upgrade...'
 /usr/bin/sudo /opt/local/bin/port selfupdate
 /usr/bin/sudo /opt/local/bin/port upgrade outdated
+
+log 'Install minimum required MacPorts...'
+/usr/bin/sudo /opt/local/bin/port install coreutils

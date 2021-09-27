@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 
 set -o errexit
 set -o pipefail
@@ -16,7 +16,7 @@ log_section() {
     set +o xtrace
     echo
     echo "+------------------------------------------------------------------------------"
-    echo "+ $@"
+    echo "+ $*"
     echo "+------------------------------------------------------------------------------"
   )
 }
@@ -69,7 +69,7 @@ yamllint --version
 #------------------------------------------------------------------------------
 log_section "Install Ansible collections"
 # shellcheck disable=SC2016
-ruby -r yaml -r json -e 'puts YAML.load($stdin.read).to_json' < ${PROJECT_DIR}/galaxy.yml \
+ruby -r yaml -r json -e 'puts YAML.load($stdin.read).to_json' < "${PROJECT_DIR}/galaxy.yml" \
     | jq -r '.dependencies | keys | .[]' \
     | xargs -I '{}' ansible-galaxy collection install --force --upgrade \
         --collections-path "$PROJECT_COLLECTION_DIR" '{}'

@@ -1,22 +1,33 @@
 # ansible-collection-devenv
 
-```bash
-python3.9 -m venv .venv
-source .venv/bin/activate
-pip install -U pip
-pip install ansible ansible-lint 'molecule[docker]' yamllint
+Clone the project into
+`ansible-collection-devenv/ansible_collections/avinode/devenv`.  *Ansible*
+collections need to exist in a spcific directory structure while working on
+them:
 
-cat galaxy.yml | ruby -r yaml -r json -e 'puts YAML.load($stdin.read).to_json' \
-    | jq -r '.dependencies | keys | .[]' \
-    | xargs -i ansible-galaxy collection install -p . '{}'
+```bash
+git clone git@github.com:Avinode/ansible-collection-devenv.git \
+    ansible-collection-devenv/ansible_collections/avinode/devenv
+```
+    
+
+The set up the project environment:
+
+```bash
+cd ansible-collection-devenv/ansible_collections/avinode/devenv
+./scripts/setup-local-ansible.sh
 ```
 
 Run tests:
 
 ```bash
-cd ansible_collections/avinode/devenv/
+cd ansible-collection-devenv/ansible_collections/avinode/devenv
 
-ansible-test sanity --docker default
+ansible-test sanity --docker default \
+    --exclude scripts/setup-local-ansible.sh \
+    --exclude scripts/setup-macports.sh \
+    --exclude .gitignore
+
 ansible-test units --docker default
 
 ansible-test integration --docker ubuntu2004 \

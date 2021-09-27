@@ -25,7 +25,11 @@ jobs:
 
       - name: Sanity checks
         working-directory: ${{ env.project_dir }}
-        run: .venv/bin/ansible-test sanity --color --docker default
+        run: |
+          .venv/bin/ansible-test sanity --color --docker default \
+              --exclude scripts/setup-local-ansible.sh \
+              --exclude scripts/setup-macports.sh \
+              --exclude .gitignore
 
       - name: Unit tests
         working-directory: ${{ env.project_dir }}
