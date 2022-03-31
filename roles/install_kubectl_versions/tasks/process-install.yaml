@@ -14,26 +14,78 @@
   tags:
     - avinode_devenv_install_kubectl
 
-- name: Fetech kubectl checksum ({{ version }})
-  uri:
-    return_content: yes
-    url: https://dl.k8s.io/v{{ version }}/bin/{{ go_platform }}/{{ go_arch }}/kubectl.sha256
-  register: _kubectl_checksum
-  tags:
-    - avinode_devenv_install_kubectl
+- name: Install kubectl version
+  block:
+    - name: Create temp file for checksum
+      ansible.builtin.tempfile:
+        suffix: .kubectl-{{ version }}-sha256
+      register: _tmp_file
+      tags:
+        - avinode_devenv_install_kubectl
 
-- name: Download kubectl ({{ version }})
-  ansible.builtin.get_url:
-    checksum: sha256:{{ _kubectl_checksum.content }}
-    dest: '{{ bin_file }}'
-    group: '{{ avinode_devenv_default_group }}'
-    mode: '0755'
-    owner: '{{ avinode_devenv_default_owner }}'
-    url: https://dl.k8s.io/release/v{{ version }}/bin/{{ go_platform }}/{{ go_arch }}/kubectl
-  become: '{{ avinode_devenv_become_for_all }}'
-  when: >-
-    not _kubectl_stat.stat.exists
-      or 'kubectl v' + version not in _kubectl_version.stdout
-  tags:
-    - avinode_devenv_install_kubectl
+    - name: Fetech kubectl checksum ({{ version }})
+      ansible.builtin.get_url:
+        dest: '{{ _tmp_file.path }}'
+        force: yes
+        url: https://dl.k8s.io/v{{ version }}/bin/{{ go_platform }}/{{ _arch }}/kubectl.sha256
+      failed_when: false
+      register: _kubectl_checksum
+      when: not (_kubectl_checksum.changed | d(false))
+      loop: '{{ go_arch }}'
+      loop_control:
+        loop_var: _arch
+      tags:
+        - avinode_devenv_install_kubectl
+
+    - name: Could fetech kubectl checksum ({{ version }})
+      fail:
+        msg: "Could not find file to download for kubectl checksum {{ version }}."
+      when: not _kubectl_checksum.changed
+      tags:
+        - avinode_devenv_install_kubectl
+
+    - name: Fetech kubectl checksum ({{ version }}) to variable
+      ansible.builtin.slurp:
+        src: '{{ _tmp_file.path }}'
+      register: _kubectl_checksum
+      tags:
+        - avinode_devenv_install_kubectl
+
+    - name: Download kubectl ({{ version }})
+      ansible.builtin.get_url:
+        checksum: sha256:{{ _kubectl_checksum.content | b64decode }}
+        dest: '{{ bin_file }}'
+        group: '{{ avinode_devenv_default_group }}'
+        mode: '0755'
+        owner: '{{ avinode_devenv_default_owner }}'
+        url: https://dl.k8s.io/release/v{{ version }}/bin/{{ go_platform }}/{{ _arch }}/kubectl
+      become: '{{ avinode_devenv_become_for_all }}'
+      failed_when: false
+      register: _kubectl
+      when: not (_kubectl.changed | d(false))
+      loop: '{{ go_arch }}'
+      loop_control:
+        loop_var: _arch
+      tags:
+        - avinode_devenv_install_kubectl
+
+    - name: Could fetech kubectl ({{ version }})
+      fail:
+        msg: "Could not find file to download for kubectl {{ version }}."
+      when: not (_kubectl.changed | d(false))
+      tags:
+        - avinode_devenv_install_kubectl
+
+  always:
+    - name: Delete temporary build file ({{ version }})
+      ansible.builtin.file:
+        path: '{{ _tmp_file.path }}'
+        state: absent
+      changed_when: false
+    - name: Unset variables # Need to be cleared to not interfere with next invokation
+      set_fact:
+        _kubectl:
+        _kubectl_checksum:
+        _tmp_file:
+  when: not _kubectl_stat.stat.exists or 'v' + version not in _kubectl_version.stdout
 ...

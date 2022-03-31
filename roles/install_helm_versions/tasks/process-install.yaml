@@ -23,33 +23,30 @@
       changed_when: false
       register: _tmp_dir
 
-    - name: Set Helm download base URL ({{ version }})
-      ansible.builtin.set_fact:
-        _helm_base_url: https://get.helm.sh/helm-v{{ version }}-{{ go_platform }}-{{ go_arch }}.tar.gz
-
-    - name: Fetech Helm checksum ({{ version }})
-      uri:
-        return_content: yes
-        url: '{{ _helm_base_url + ".sha256" }}'
-      register: _helm_v2_checksum
-      when: version is version('3.0', '<')
-
     - name: Download Helm archive file ({{ version }})
       ansible.builtin.get_url:
-        checksum: >-
-          sha256:{{ version is version('3.0', '>=') 
-              | ternary(_helm_base_url + ".sha256sum", _helm_v2_checksum.content) }}
+        checksum: 'sha256:https://get.helm.sh/helm-v{{ version }}-{{ go_platform }}-{{ _arch }}.tar.gz.sha256sum'
         dest: '{{ _tmp_dir.path }}'
         mode: '0600'
-        url: '{{ _helm_base_url }}'
+        url: 'https://get.helm.sh/helm-v{{ version }}-{{ go_platform }}-{{ _arch }}.tar.gz'
+      failed_when: false
       register: _helm_tgz
+      when: not (_helm_tgz.changed | default(false))
+      loop: '{{ go_arch }}'
+      loop_control:
+        loop_var: _arch
+
+    - name: Check successfull download
+      fail:
+        msg: "Could not find file to download for helm {{ version }}."
+      when: (_helm_tgz.results | selectattr("changed", "equalto", true)) | length != 1
 
     - name: Expanding the Helm archive file ({{ version }})
       ansible.builtin.unarchive:
         dest: '{{ _tmp_dir.path }}'
         mode: '0755'
         remote_src: yes
-        src: '{{ _helm_tgz.dest }}'
+        src: '{{ (_helm_tgz.results | selectattr("changed", "equalto", true) | first).dest }}'
 
     - name: Copy Helm executable to bin/ directory ({{ version }})
       ansible.builtin.copy:
@@ -58,8 +55,19 @@
         mode: '0755'
         owner: '{{ avinode_devenv_default_owner }}'
         remote_src: yes
-        src: '{{ _tmp_dir.path }}/{{ go_platform }}-{{ go_arch }}/helm'
+        src: '{{ _tmp_dir.path }}/{{ go_platform }}-{{ _arch }}/helm'
       become: '{{ avinode_devenv_become_for_all }}'
+      failed_when: false
+      register: _helm_copy
+      when: not (_helm_copy.changed | default(false))
+      loop: '{{ go_arch }}'
+      loop_control:
+        loop_var: _arch
+
+    - name: Check successfull copy
+      fail:
+        msg: "Could not find file tocopy for helm {{ version }}."
+      when: (_helm_copy.results | selectattr("changed", "equalto", true)) | length != 1
 
   always:
     - name: Delete temporary build directory ({{ version }})
@@ -67,6 +75,11 @@
         path: '{{ _tmp_dir.path }}'
         state: absent
       changed_when: false
+    - name: Unset variables # Need to be cleared to not interfere with next invokation
+      set_fact:
+        _helm_v2_checksum:
+        _helm_tgz:
+        _helm_copy:
   when: >-
     not _helm_stat.stat.exists
       or 'v' + version not in _helm_version.stdout

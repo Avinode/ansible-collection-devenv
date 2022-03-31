@@ -28,15 +28,25 @@
         checksum: sha256:https://releases.hashicorp.com/terraform/{{ version }}/terraform_{{ version }}_SHA256SUMS
         dest: '{{ _tmp_dir.path }}'
         mode: '0600'
-        url: https://releases.hashicorp.com/terraform/{{ version }}/terraform_{{ version }}_{{ go_platform }}_{{ go_arch }}.zip
+        url: https://releases.hashicorp.com/terraform/{{ version }}/terraform_{{ version }}_{{ go_platform }}_{{ _arch }}.zip
+      failed_when: false
       register: _terraform_zip
+      when: not (_terraform_zip.changed | d(false))
+      loop: '{{ go_arch }}'
+      loop_control:
+        loop_var: _arch
+
+    - name: Check successfull download
+      fail:
+        msg: "Could not find file to download for terraform {{ version }}."
+      when: (_terraform_zip.results | selectattr("changed", "equalto", true)) | length != 1
 
     - name: Unzip Terraform zip file ({{ version }})
       ansible.builtin.unarchive:
         dest: '{{ _tmp_dir.path }}'
         mode: '0755'
         remote_src: yes
-        src: '{{ _terraform_zip.dest }}'
+        src: '{{ (_terraform_zip.results | selectattr("changed", "equalto", true) | first).dest }}'
 
     - name: Copy Terraform executable to bin/ directory ({{ version }})
       ansible.builtin.copy:
@@ -54,6 +64,9 @@
         path: '{{ _tmp_dir.path }}'
         state: absent
       changed_when: false
+    - name: Unset variables # Need to be cleared to not interfere with next invokation
+      set_fact:
+        _terraform_zip:
   when: >-
     not _terraform_stat.stat.exists
       or 'Terraform v' + version not in _terraform_version.stdout

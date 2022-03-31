@@ -1,0 +1,135 @@
+---
+- name: Testing 'avinode.devenv.install_helm_versions'
+  block:
+    # -------------------------------------------------------------------------
+    # Arrange
+    # -------------------------------------------------------------------------
+    - name: Create temporary test directory
+      ansible.builtin.tempfile:
+        state: directory
+        suffix: .install-helm-integration-tests
+      register: _tmp_test_dir
+    - set_fact:
+        avinode_devenv_prefix: '{{ _tmp_test_dir.path }}'
+    - include_role:
+        name: avinode.devenv.baseline
+
+    # -------------------------------------------------------------------------
+    # Test install
+    # -------------------------------------------------------------------------
+    - name: Executing `install_helm_versions` to test installs
+      import_role:
+        name: avinode.devenv.install_helm_versions
+      vars:
+        install_helm_versions:
+          absent: []
+          installed:
+            - '3.6.2'
+            - '3.8.1'
+          absent_symlinks: []
+          symlinks:
+            helm: '3.6.2'
+            helm3: '3.6.2'
+            helm3.6: '3.6.2'
+            helm3.8: '3.8.1'
+
+    - name: Test installed helm executables.
+      ansible.builtin.command:
+        cmd: '{{ _tmp_test_dir.path }}/bin/{{ item.key }} version'
+      register: _ver_check
+      failed_when: item.value not in _ver_check.stdout
+      loop: '{{ _cmd_versions | dict2items }}'
+      vars:
+        _cmd_versions:
+          helm3.6.2: '3.6.2'
+          helm3.6: '3.6.2'
+          helm3: '3.6.2'
+          helm: '3.6.2'
+          helm3.8.1: '3.8.1'
+          helm3.8: '3.8.1'
+
+    - name: Test that Bash completion can be sourced.
+      ansible.builtin.shell:
+        cmd: '/bin/bash -c "source {{ _tmp_test_dir.path }}/etc/bash_completion.d/helm.sh"'
+
+    - name: Test that Bash completion lines still exist.
+      ansible.builtin.lineinfile:
+        name: '{{ _tmp_test_dir.path }}/etc/bash_completion.d/helm.sh'
+        line: '  complete -o default -F __start_helm {{ item }}'
+        state: present
+      check_mode: true
+      register: _completion_line_check
+      failed_when: (_completion_line_check is changed) or (_completion_line_check is failed)
+      loop:
+        - helm
+        - helm3
+        - helm3.6
+        - helm3.6.2
+        - helm3.8
+        - helm3.8.1
+
+    # -------------------------------------------------------------------------
+    # Test uninstall
+    # -------------------------------------------------------------------------
+    - name: Executing `install_helm_versions` to test uninstalls
+      include_role:
+        name: avinode.devenv.install_helm_versions
+      vars:
+        install_helm_versions:
+          absent:
+            - '3.8.1'
+          installed:
+            - '3.6.2'
+          absent_symlinks:
+            - helm3.8
+          symlinks:
+            helm: '3.6.2'
+            helm3: '3.6.2'
+            helm3.6: '3.6.2'
+
+    # Check that files have been removed.
+    - name: Test that the bin files for uninstalled versions have been deleted.
+      ansible.builtin.stat:
+        path: '{{ _tmp_test_dir.path }}/bin/{{ item }}'
+      register: _test_file_stats
+      failed_when: _test_file_stats.stat.exists
+      loop:
+        - helm3.8
+        - helm3.8.1
+
+    - name: Test that Bash completion lines have been removed
+      ansible.builtin.lineinfile:
+        name: '{{ _tmp_test_dir.path }}/etc/bash_completion.d/helm.sh'
+        line: '  complete -o default -F __start_helm {{ item }}'
+        state: absent
+      check_mode: true
+      register: _completion_line_check
+      failed_when: (_completion_line_check is changed) or (_completion_line_check is failed)
+      loop:
+        - helm3.8
+        - helm3.8.1
+
+    - name: Test that older Bash completion lines still exist
+      ansible.builtin.lineinfile:
+        name: '{{ _tmp_test_dir.path }}/etc/bash_completion.d/helm.sh'
+        line: '  complete -o default -F __start_helm {{ item }}'
+        state: present
+      check_mode: true
+      register: _completion_line_check
+      failed_when: (_completion_line_check is changed) or (_completion_line_check is failed)
+      loop:
+        - helm
+        - helm3
+        - helm3.6
+        - helm3.6.2
+
+  always:
+    - name: Delete temporary test directory
+      ansible.builtin.file:
+        path: '{{ _tmp_test_dir.path }}'
+        state: absent
+  vars:
+    avinode_devenv_become_for_all: false
+    avinode_devenv_default_group: '{{ ansible_user_gid }}'
+    avinode_devenv_default_owner: '{{ ansible_user_id }}'
+...

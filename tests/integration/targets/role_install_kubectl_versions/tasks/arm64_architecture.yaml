@@ -1,0 +1,72 @@
+---
+- name: Ensure required tools are installed.
+  ansible.builtin.apt:
+    cache_valid_time: 86400  # 24 hours
+    name: [zsh]
+    state: present
+    update_cache: true
+  when: ansible_os_family == 'Debian'
+
+- name: Testing 'avinode.devenv.install_kubectl_versions'
+  block:
+    # -------------------------------------------------------------------------
+    # Arrange
+    # -------------------------------------------------------------------------
+    - name: Create temporary test directory
+      ansible.builtin.tempfile:
+        state: directory
+        suffix: .install-kubectl-integration-tests
+      register: _tmp_test_dir
+    - set_fact:
+        avinode_devenv_prefix: '{{ _tmp_test_dir.path }}'
+        _saved_avinode_devenv_go_arch: '{{ avinode_devenv_go_arch }}'
+        avinode_devenv_go_arch:
+          - 'arm64'
+          - 'amd64'
+        avinode_devenv_install_kubectl_skip_completion: true # Can not execute the binary that has wrong architecture
+    - include_role:
+        name: avinode.devenv.baseline
+
+    # -------------------------------------------------------------------------
+    # Test install
+    # -------------------------------------------------------------------------
+    - name: Executing `install_kubectl_versions` to test installs
+      import_role:
+        name: avinode.devenv.install_kubectl_versions
+      vars:
+        install_kubectl_versions:
+          absent: []
+          installed:
+            - '1.19.12'
+            - '1.21.2'
+          absent_symlinks: []
+          symlinks:
+            kubectl: '1.21.2'
+            kubectl1.19: '1.19.12'
+            kubectl1.21: '1.21.2'
+
+    - name: Test installed arm64 versions of helm executables.
+      ansible.builtin.command:
+        cmd: 'file {{ _tmp_test_dir.path }}/bin/{{ item.key }}'
+      register: _ver_check
+      failed_when: item.value not in _ver_check.stdout
+      loop: '{{ _cmd_versions | dict2items }}'
+      vars:
+        _cmd_versions:
+          kubectl1.21.2: 'arm64'
+          kubectl1.19.12: 'x86_64'
+
+  always:
+    - name: Delete temporary test directory
+      ansible.builtin.file:
+        path: '{{ _tmp_test_dir.path }}'
+        state: absent
+    - set_fact:
+        avinode_devenv_go_arch: '{{ _saved_avinode_devenv_go_arch }}'
+        _saved_avinode_devenv_go_arch:
+        avinode_devenv_install_kubectl_skip_completion:
+  vars:
+    avinode_devenv_become_for_all: false
+    avinode_devenv_default_group: '{{ ansible_user_gid }}'
+    avinode_devenv_default_owner: '{{ ansible_user_id }}'
+...

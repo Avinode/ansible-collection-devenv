@@ -31,6 +31,8 @@
     _install_terraform_absent_names: >-
       {{ (install_terraform_versions.absent | map('regex_replace', '^(.*)$', 'terraform\1'))
           + install_terraform_versions.absent_symlinks | list }}
+  tags:
+    - avinode_devenv_install_terraform
 
 - name: Ensure absent bash completions for Terraform
   ansible.builtin.file:
@@ -94,6 +96,8 @@
     _install_terraform_present_symlink_names: >-
       {{ (install_terraform_versions.installed | map('regex_replace', '^(.*)$', 'terraform\1'))
           + install_terraform_versions.symlinks | list }}
+  tags:
+    - avinode_devenv_install_terraform
 
 - name: Ensure bash completions for Terraform
   ansible.builtin.template:

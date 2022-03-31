@@ -79,6 +79,8 @@
     _install_kubectl_present_symlink_names: >-
       {{ (install_kubectl_versions.installed | map('regex_replace', '^(.*)$', 'kubectl\1'))
           + install_kubectl_versions.symlinks | list | reject('match', '^kubectl$') }}
+  tags:
+    - avinode_devenv_install_kubectl
 
 #---- bash ----
 - name: Stat kubectl symlink/file
@@ -115,6 +117,7 @@
     cmd: '"{{ avinode_devenv_prefix }}/bin/kubectl" completion zsh'
   register: _kubectl_completion_contents
   changed_when: false
+  when: avinode_devenv_install_kubectl_skip_completion is not defined # Needed for the fake architecture tests
   tags:
     - avinode_devenv_install_kubectl
 
@@ -126,6 +129,7 @@
     mode: '0644'
     owner: '{{ avinode_devenv_default_owner }}'
   become: '{{ avinode_devenv_become_for_all }}'
+  when: avinode_devenv_install_kubectl_skip_completion is not defined # Needed for the fake architecture tests
   tags:
     - avinode_devenv_install_kubectl
 
@@ -140,6 +144,7 @@
   loop: '{{ _install_kubectl_present_symlink_names }}'
   loop_control:
     loop_var: _kubectl_completion_target
+  when: avinode_devenv_install_kubectl_skip_completion is not defined # Needed for the fake architecture tests
   tags:
     - avinode_devenv_install_kubectl
 ...

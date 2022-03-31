@@ -82,10 +82,20 @@
   tags:
     - avinode_devenv_global_defaults
   changed_when: false
+
 - name: Define avinode_devenv_go_arch.
   ansible.builtin.set_fact:
-    avinode_devenv_go_arch: '{{ __avinode_devenv_go_arch.stdout | trim }}'
+    avinode_devenv_go_arch:
+    - "{{ __avinode_devenv_go_arch.stdout | trim }}"
   when: avinode_devenv_go_arch is not defined
+  tags:
+    - avinode_devenv_global_defaults
+
+# On Mac with M1 processor we can fall back to amd64 using rosetta
+- name: Has fallback arch Apple M1
+  ansible.builtin.set_fact:
+    avinode_devenv_go_arch: "{{ avinode_devenv_go_arch + [ 'amd64' ] }}"
+  when: ansible_os_family == 'Darwin' and 'arm64' in avinode_devenv_go_arch
   tags:
     - avinode_devenv_global_defaults
 
@@ -101,6 +111,5 @@
     avinode_devenv_go_platform: '{{ __avinode_devenv_go_platform.stdout | trim }}'
   when: avinode_devenv_go_platform is not defined
   tags:
-    - avinode_devenv_global_defaults
     - avinode_devenv_global_defaults
 ...
