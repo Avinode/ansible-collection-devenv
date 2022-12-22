@@ -48,63 +48,17 @@ jobs:
       - name: Sanity checks
         working-directory: ${{ env.project_dir }}
         run: |
-          .venv/bin/ansible-test sanity --color --docker default \
-              --exclude scripts/setup-local-ansible.sh \
-              --exclude scripts/setup-macports.sh \
-              --exclude .gitignore
+          make sanity
 
       - name: Unit tests
         working-directory: ${{ env.project_dir }}
-        run: .venv/bin/ansible-test units --color --docker default
+        run: |
+          make units
 
-      # TODO - Turn back on once it starts working again, if ever.  There seem
-      # to have been changes in ansible-test thet broke it.
-      # - name: Integration tests (geerlingguy - Debian 10)
-      #   working-directory: ${{ env.project_dir }}
-      #   run: |
-      #     .venv/bin/ansible-test integration --color \
-      #       --docker-privileged \
-      #       --docker 'geerlingguy/docker-debian10-ansible:latest' \
-      #       --python 3.7
-
-      - name: Integration tests (geerlingguy - Debian 11)
+      - name: Integration tests (Debian, Ubuntu)
         working-directory: ${{ env.project_dir }}
         run: |
-          .venv/bin/ansible-test integration --color \
-              --docker 'geerlingguy/docker-debian11-ansible:latest' \
-              --docker-privileged \
-              --python 3.9
-
-      - name: Integration tests (Ubuntu 2004)
-        working-directory: ${{ env.project_dir }}
-        run: |
-          .venv/bin/ansible-test integration --color --docker ubuntu2004
-
-      # TODO - Add ubuntu2204 once updated version of ansible-test is released,
-      # this verion is currently in development.
-      # - name: Integration tests (Ubuntu 2204)
-      #   working-directory: ${{ env.project_dir }}
-      #   run: |
-      #     .venv/bin/ansible-test integration --color --docker 'ubuntu2204'
-
-      # Here out of curiosity.  The ubuntu2004 image above should be enough.
-      - name: Integration tests (geerlingguy - Ubuntu 2004)
-        working-directory: ${{ env.project_dir }}
-        run: |
-          .venv/bin/ansible-test integration --color \
-              --docker 'geerlingguy/docker-ubuntu2004-ansible:latest' \
-              --docker-privileged \
-              --python 3.8
-
-      # Can be removed once the ubuntu2204 Docker image is released by
-      # ansible-test.
-      - name: Integration tests (geerlingguy - Ubuntu 2204)
-        working-directory: ${{ env.project_dir }}
-        run: |
-          .venv/bin/ansible-test integration --color \
-              --docker 'geerlingguy/docker-ubuntu2204-ansible:latest' \
-              --docker-privileged \
-              --python 3.10
+          make integration
 
   integration-test-macports:
     name: Macports integration tests
