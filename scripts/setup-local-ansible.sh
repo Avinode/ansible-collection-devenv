@@ -64,7 +64,6 @@ pip3 install --upgrade --upgrade-strategy eager wheel setuptools pip
 pip3 install --requirement "${PROJECT_DIR}/requirements.txt"
 
 
-
 #------------------------------------------------------------------------------
 # Display setup
 #------------------------------------------------------------------------------

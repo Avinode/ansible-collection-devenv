@@ -99,6 +99,13 @@
   tags:
     - avinode_devenv_global_defaults
 
+- name: Has fallback arch on ARM64 based Linux
+  ansible.builtin.set_fact:
+    avinode_devenv_go_arch: "{{ avinode_devenv_go_arch + [ 'arm' ] }}"
+  when: ansible_system == 'Linux' and 'arm64' in avinode_devenv_go_arch
+  tags:
+    - avinode_devenv_global_defaults
+
 - name: Fecth GOOS.
   ansible.builtin.shell: |
     eval "$(go tool dist env)"; echo $GOOS
