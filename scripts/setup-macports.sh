@@ -60,7 +60,7 @@ function get_macos_friendly_name() {
 }
 
 function get_macports_pkg_file_name() {
-  echo "MacPorts-$(get_latest_macports_version)-$(get_macos_version)-$(get_macos_friendly_name).pkg"
+  echo "MacPorts-$MACPORTS_VERSION-$(get_macos_version)-$(get_macos_friendly_name).pkg"
 }
 
 
@@ -73,8 +73,11 @@ if [ "${DISABLE_SPOTLIGHT}" == "true" ]; then
 fi
 
 log 'Installation information...'
+MACPORTS_VERSION="$(get_latest_macports_version)"
 MACPORTS_PKG_FILE="$(get_macports_pkg_file_name)"
+MACPORTS_PKG_URL="https://github.com/macports/macports-base/releases/download/v$MACPORTS_VERSION/$MACPORTS_PKG_FILE"
 echo MACPORTS_PKG_FILE="$MACPORTS_PKG_FILE"
+echo MACPORTS_PKG_URL="$MACPORTS_PKG_URL"
 
 log 'Downloading MacPorts...'
 /usr/bin/curl \
@@ -83,7 +86,7 @@ log 'Downloading MacPorts...'
     --remote-name \
     --show-error \
     --silent \
-    "https://distfiles.macports.org/MacPorts/$MACPORTS_PKG_FILE"
+    "$MACPORTS_PKG_URL"
 
 if ! sudo -n true 2>/dev/null; then
   echo "======================================================="
