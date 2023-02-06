@@ -37,7 +37,7 @@
 # -- Helm --
 - name: Ensure Helms's GPG key for Apt
   ansible.builtin.apt_key:
-    id: 294AC4827C1A168A
+    id: '0x294AC4827C1A168A'
     url: https://baltocdn.com/helm/signing.asc
     state: present
   become: '{{ avinode_devenv_become_for_all }}'
@@ -56,7 +56,7 @@
   # -- Kubernetes --
 - name: Ensure Kubernetes's GPG key for Apt
   ansible.builtin.apt_key:
-    id: FEEA9169307EA071
+    id: '0xB53DC80D13EDEF05'
     url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
     state: present
   become: '{{ avinode_devenv_become_for_all }}'
@@ -75,7 +75,7 @@
   # -- NodeJS 14 --
 - name: Ensure Node.js's GPG key for Apt
   ansible.builtin.apt_key:
-    id: 1655A0AB68576280
+    id: '0x1655A0AB68576280'
     url: https://deb.nodesource.com/gpgkey/nodesource.gpg.key
     state: present
   become: '{{ avinode_devenv_become_for_all }}'
@@ -94,7 +94,7 @@
   # -- Yarn --
 - name: Ensure Yarns's GPG key for Apt
   ansible.builtin.apt_key:
-    id: 1646B01B86E50310
+    id: '0x1646B01B86E50310'
     url: https://dl.yarnpkg.com/debian/pubkey.gpg
     state: present
   become: '{{ avinode_devenv_become_for_all }}'
@@ -113,7 +113,7 @@
   # -- HashiCorp --
 - name: Ensure HashiCorp's GPG key for Apt
   ansible.builtin.apt_key:
-    id: DA418C88A3219F7B
+    id: '0xAA16FCBCA621E701'
     url: https://apt.releases.hashicorp.com/gpg
     state: present
   become: '{{ avinode_devenv_become_for_all }}'
