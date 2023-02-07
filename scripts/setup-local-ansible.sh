@@ -81,8 +81,37 @@ pip3 freeze
 # Install Ansible collections
 #------------------------------------------------------------------------------
 log_section "Install Ansible collections"
+
+function ansible_collection_install {
+  local _install_dir="$2"
+  local _collection="$2"
+  local _sleep=60
+  local _attempts=5
+  local _attempt
+  for _attempt in $(seq 1 $_attempts); do
+    {  # Try
+      echo "+ INFO - Attempt $_attempt of $_attempts to install the Ansible Collection: $_collection"
+      ansible-galaxy collection install --force --upgrade \
+          --collections-path "$PROJECT_COLLECTION_DIR" "$_collection"
+    } || {  # Catch
+      if [[ $_attempt == "$_attempts" ]]; then
+        echo "+ FATAL - Failed to install an Ansible Collection after $_attempts attempts: $_collection"
+        exit 1
+      fi
+      echo "+ WARN - Sleeping for $_sleep sec. Failed attempt $_attempt of $_attempts to install the Ansible Collection: '$_collection'"
+      sleep $_sleep
+      continue
+    }
+    echo "+ INFO - Ansible Collection installed successfully: $_collection"
+    break
+  done
+}
+
 # shellcheck disable=SC2016
-ruby -r yaml -r json -e 'puts YAML.load($stdin.read).to_json' < "${PROJECT_DIR}/galaxy.yml" \
-    | jq -r '.dependencies | keys | .[]' \
-    | xargs -I '{}' ansible-galaxy collection install --force --upgrade \
-        --collections-path "$PROJECT_COLLECTION_DIR" '{}'
+ansible_collections=$(ruby -r yaml -r json -e 'puts YAML.load($stdin.read).to_json' < "${PROJECT_DIR}/galaxy.yml" \
+  | jq -r '.dependencies | keys | .[]')
+
+# shellcheck disable=SC2068
+for collection in ${ansible_collections[@]}; do
+  ansible_collection_install "$PROJECT_COLLECTION_DIR" "$collection"
+done
