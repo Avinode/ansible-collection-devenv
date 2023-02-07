@@ -1,2 +1,3 @@
 dependencies:
   - avinode.devenv.global_defaults
+  - avinode.devenv.apt_sources
