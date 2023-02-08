@@ -83,7 +83,7 @@ pip3 freeze
 log_section "Install Ansible collections"
 
 function ansible_collection_install {
-  local _install_dir="$2"
+  local _install_dir="$1"
   local _collection="$2"
   local _sleep=60
   local _attempts=5
