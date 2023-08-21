@@ -4,4 +4,7 @@ avinode_devenv_force_upgrade_all: false
 avinode_devenv_prefix: /opt/devenv
 
 avinode_devenv_packages_update_cache: false
+
+_avinode_devenv_go_arch_command: eval "$(go env)"; echo $GOHOSTARCH
+_avinode_devenv_go_platform_command: eval "$(go env)"; echo $GOOS
 ...

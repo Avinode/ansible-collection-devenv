@@ -1,0 +1,37 @@
+---
+- name: Reset avinode_devenv_go_* facts at start of test.
+  ansible.utils.update_fact:
+    updates:
+      - path: avinode_devenv_go_arch
+        value: ''
+      - path: avinode_devenv_go_platform
+        value: ''
+  ignore_errors: true
+
+- name: Happy test for avinode.devenv.global_defaults
+  block:
+    - name: Baseline test of avinode.devenv.global_defaults
+      ansible.builtin.import_role:
+        name: avinode.devenv.global_defaults
+    - name: Assert that avinode_devenv_go_platform is set.
+      ansible.builtin.assert:
+        fail_msg: avinode_devenv_go_platform must have been set.
+        that:
+          - avinode_devenv_go_platform | length > 0
+    - name: Assert that avinode_devenv_go_arch is set.
+      ansible.builtin.assert:
+        fail_msg: avinode_devenv_go_arch must have been set.
+        that:
+          - avinode_devenv_go_arch | length > 0
+  always:
+    - name: Reset avinode_devenv_go_* facts at end of test.
+      ansible.utils.update_fact:
+        updates:
+          - path: avinode_devenv_go_arch
+            value: ''
+          - path: avinode_devenv_go_platform
+            value: ''
+
+# TODO - Figure out how to add unhappy tests.
+
+...

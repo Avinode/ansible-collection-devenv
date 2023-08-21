@@ -49,9 +49,9 @@
     - avinode_devenv_global_defaults
 
 
-# -----------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # Get GoLang settings
-# -----------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 - name: Ensure golang is installed on Debian OS family.
   ansible.builtin.apt:
     name: golang
@@ -73,11 +73,14 @@
   when: ansible_os_family == 'Darwin'
   tags:
     - avinode_devenv_global_defaults
-# TODO - Add a HomeBrew option in a future release.
 
+#----
+# avinode_devenv_go_arch
+#----
 - name: Fecth GOHOSTARCH.
+    # eval "$( {{ _avinode_devenv_go_env_command }} )"; echo $GOHOSTARCH
   ansible.builtin.shell: |
-    eval "$(go tool dist env)"; echo $GOHOSTARCH
+    {{ _avinode_devenv_go_arch_command }}
   register: __avinode_devenv_go_arch
   tags:
     - avinode_devenv_global_defaults
@@ -91,24 +94,35 @@
   tags:
     - avinode_devenv_global_defaults
 
+- name: Assert that avinode_devenv_go_arch is set.
+  ansible.builtin.assert:
+    fail_msg: avinode_devenv_go_arch must have a value
+    that:
+      - avinode_devenv_go_arch | length > 0
+  tags:
+    - avinode_devenv_global_defaults
+
 # On Mac with M1 processor we can fall back to amd64 using rosetta
 - name: Has fallback arch Apple M1
   ansible.builtin.set_fact:
-    avinode_devenv_go_arch: "{{ avinode_devenv_go_arch + [ 'amd64' ] }}"
+    avinode_devenv_go_arch: "{{ avinode_devenv_go_arch + ['amd64'] }}"
   when: ansible_os_family == 'Darwin' and 'arm64' in avinode_devenv_go_arch
   tags:
     - avinode_devenv_global_defaults
 
 - name: Has fallback arch on ARM64 based Linux
   ansible.builtin.set_fact:
-    avinode_devenv_go_arch: "{{ avinode_devenv_go_arch + [ 'arm' ] }}"
+    avinode_devenv_go_arch: "{{ avinode_devenv_go_arch + ['arm'] }}"
   when: ansible_system == 'Linux' and 'arm64' in avinode_devenv_go_arch
   tags:
     - avinode_devenv_global_defaults
 
+#----
+# avinode_devenv_go_platform
+#----
 - name: Fecth GOOS.
   ansible.builtin.shell: |
-    eval "$(go tool dist env)"; echo $GOOS
+    {{ _avinode_devenv_go_platform_command }}
   register: __avinode_devenv_go_platform
   tags:
     - avinode_devenv_global_defaults
@@ -119,4 +133,13 @@
   when: avinode_devenv_go_platform is not defined
   tags:
     - avinode_devenv_global_defaults
+
+- name: Assert that avinode_devenv_go_platform is set.
+  ansible.builtin.assert:
+    fail_msg: avinode_devenv_go_platform must have a value
+    that:
+      - avinode_devenv_go_platform | length > 0
+  tags:
+    - avinode_devenv_global_defaults
+
 ...
