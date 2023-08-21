@@ -2,9 +2,14 @@ BUILD_RAND_NAME ?= $(shell tr -dc a-z0-9 </dev/urandom | head -c 13)
 
 IMAGE_DEBIAN11 := geerlingguy/docker-debian11-ansible:latest
 IMAGE_DEBIAN11_PYTHON := '3.9'
-IMAGE_UBUNTU2004 := geerlingguy/docker-ubuntu2004-ansible:latest
+IMAGE_DEBIAN12 := geerlingguy/docker-debian12-ansible:latest
+IMAGE_DEBIAN12_PYTHON := '3.11'
+
+# The following Ubuntu images are from:
+# 	- https://github.com/ansible/ansible/blob/devel/test/lib/ansible_test/_data/completion/docker.txt
+IMAGE_UBUNTU2004 := ubuntu2004
 IMAGE_UBUNTU2004_PYTHON := '3.8'
-IMAGE_UBUNTU2204 := geerlingguy/docker-ubuntu2204-ansible:latest
+IMAGE_UBUNTU2204 := ubuntu2204
 IMAGE_UBUNTU2204_PYTHON := 3.10
 
 DEFAULT_IMAGE_NAME := DEBIAN11
@@ -16,7 +21,7 @@ ANSIBLE_TEST_SANITY_EXCLUDES := \
 		scripts/setup-macports.sh \
 		.gitignore
 
-integration_phony_targets := $(addprefix integration-, debian11 ubuntu2004 ubuntu2204)
+integration_phony_targets := $(addprefix integration-, debian11 debian12 ubuntu2004 ubuntu2204)
 
 .PHONY: \
 		$(integration_phony_targets) \
@@ -33,16 +38,7 @@ all: pre-commit
 
 pre-commit: super-linter sanity units integration
 
-# TODO - Add back once Ansible-core 2.15 is released:
-#   - integration-ubuntu2004
-#   - integration-ubuntu2204
-# There have been cgroup changes in Ubuntu and others in Docker that are
-# causing issues.  These should be resolved in Ansible-core 2.15.  Release
-# schedule is in:
-#   - https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html#ansible-core-release-cycle
-# Changes seem to be in:
-#   - https://github.com/ansible/ansible/commit/04fc98c794d425a42f83a062c163c981d8751512
-integration: integration-debian11 # TODO - integration-ubuntu2004 integration-ubuntu2204
+integration: integration-debian11 integration-ubuntu2004 integration-ubuntu2204  # TODO - integration-debian12
 
 sanity:
 	$(info $(SECTION))
