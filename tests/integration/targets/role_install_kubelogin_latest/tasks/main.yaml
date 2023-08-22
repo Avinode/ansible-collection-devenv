@@ -1,0 +1,173 @@
+---
+- name: Ensure required tools are installed.
+  ansible.builtin.apt:
+    cache_valid_time: 86400  # 24 hours
+    name: [zsh]
+    state: present
+    update_cache: true
+  when: ansible_os_family == 'Debian'
+
+- name: Testing 'avinode.devenv.install_kubelogin_latest'
+  block:
+    # -------------------------------------------------------------------------
+    # Arrange
+    # -------------------------------------------------------------------------
+    - name: Create temporary test directory
+      ansible.builtin.tempfile:
+        state: directory
+        suffix: .install-kubelogin-integration-tests
+      register: _tmp_test_dir
+    - set_fact:
+        avinode_devenv_prefix: '{{ _tmp_test_dir.path }}'
+    - include_role:
+        name: avinode.devenv.baseline
+
+    # -------------------------------------------------------------------------
+    # Test install
+    # -------------------------------------------------------------------------
+    - name: Executing `install_kubectl_versions` to test installs
+      import_role:
+        name: avinode.devenv.install_kubelogin_latest
+
+    # - name: Test installed kubectl executables.
+    #   ansible.builtin.command:
+    #     cmd: '{{ _tmp_test_dir.path }}/bin/{{ item.key }} version'
+    #   register: _ver_check
+    #   failed_when: item.value not in _ver_check.stdout
+    #   loop: '{{ _cmd_versions | dict2items }}'
+    #   vars:
+    #     _cmd_versions:
+    #       kubectl: '1.21.2'
+    #       kubectl1.19: '1.19.12'
+    #       kubectl1.19.12: '1.19.12'
+    #       kubectl1.21: '1.21.2'
+    #       kubectl1.21.2: '1.21.2'
+    #
+    # # ---- Bash ----
+    # - name: Test that Bash completion can be sourced.
+    #   ansible.builtin.shell:
+    #     cmd: '/bin/bash -c "source {{ _tmp_test_dir.path }}/etc/bash_completion.d/kubectl.sh"'
+    #
+    # - name: Test that Bash completion lines still exist.
+    #   ansible.builtin.lineinfile:
+    #     name: '{{ _tmp_test_dir.path }}/etc/bash_completion.d/kubectl.sh'
+    #     line: 'complete -F __start_kubectl {{ item }}'
+    #     state: present
+    #   check_mode: true
+    #   register: _completion_line_check
+    #   failed_when: (_completion_line_check is changed) or (_completion_line_check is failed)
+    #   loop:
+    #     - kubectl1.19
+    #     - kubectl1.19.12
+    #     - kubectl1.21
+    #     - kubectl1.21.2
+    #
+    # # ---- Zsh ----
+    # - name: Test that Zsh completions can be sourced.
+    #   ansible.builtin.shell:
+    #     cmd: |
+    #       autoload -U +X bashcompinit && bashcompinit
+    #       autoload -Uz compinit && compinit
+    #       source {{ _tmp_test_dir.path }}/share/zsh/site-functions/_{{ item }}
+    #     executable: /bin/zsh
+    #   loop:
+    #     - kubectl
+    #     - kubectl1.19
+    #     - kubectl1.19.12
+    #     - kubectl1.21
+    #     - kubectl1.21.2
+    #
+    #
+    # # -------------------------------------------------------------------------
+    # # Test uninstall
+    # # -------------------------------------------------------------------------
+    # - name: Executing `install_kubectl_versions` to test uninstalls
+    #   include_role:
+    #     name: avinode.devenv.install_kubectl_versions
+    #   vars:
+    #     install_kubectl_versions:
+    #       absent:
+    #         - '1.19.12'
+    #       installed:
+    #         - '1.21.2'
+    #       absent_symlinks:
+    #         - kubectl1.19
+    #       symlinks:
+    #         kubectl: '1.21.2'
+    #         kubectl1.21: '1.21.2'
+    #
+    # - name: Test that the bin files for uninstalled versions have been deleted.
+    #   ansible.builtin.stat:
+    #     path: '{{ _tmp_test_dir.path }}/bin/{{ item }}'
+    #   register: _test_file_stats
+    #   failed_when: _test_file_stats.stat.exists
+    #   loop:
+    #     - kubectl1.19
+    #     - kubectl1.19.12
+    #
+    # - name: Test that the bin files for the other versions still exist.
+    #   ansible.builtin.stat:
+    #     path: '{{ _tmp_test_dir.path }}/bin/{{ item }}'
+    #   register: _test_file_stats
+    #   failed_when: |
+    #     not (_test_file_stats.stat.exists and _test_file_stats.stat.executable)
+    #   loop:
+    #     - kubectl
+    #     - kubectl1.21
+    #     - kubectl1.21.2
+    #
+    # # ---- bash ----
+    # - name: Test that Bash kubectl completion lines have been removed
+    #   ansible.builtin.lineinfile:
+    #     name: '{{ _tmp_test_dir.path }}/etc/bash_completion.d/kubectl.sh'
+    #     line: 'complete -F __start_kubectl {{ item }}'
+    #     state: absent
+    #   check_mode: true
+    #   register: _completion_line_check
+    #   failed_when: (_completion_line_check is changed) or (_completion_line_check is failed)
+    #   loop:
+    #     - kubectl1.19
+    #     - kubectl1.19.12
+    #
+    # - name: Test that older Bash kubectl completion lines still exist
+    #   ansible.builtin.lineinfile:
+    #     name: '{{ _tmp_test_dir.path }}/etc/bash_completion.d/kubectl.sh'
+    #     line: 'complete -F __start_kubectl {{ item }}'
+    #     state: present
+    #   check_mode: true
+    #   register: _completion_line_check
+    #   failed_when: (_completion_line_check is changed) or (_completion_line_check is failed)
+    #   loop:
+    #     - kubectl1.21
+    #     - kubectl1.21.2
+    #
+    # # ---- Zsh ----
+    # - name: Test that Zsh kubectl completion files have been removed
+    #   ansible.builtin.stat:
+    #     path: '{{ _tmp_test_dir.path }}/share/zsh/site-functions/_{{ item }}'
+    #   register: _test_file_stats
+    #   failed_when: _test_file_stats.stat.exists
+    #   loop:
+    #     - kubectl1.19
+    #     - kubectl1.19.12
+    #
+    # - name: Test that older Zsh kubectl completion files still exist
+    #   ansible.builtin.stat:
+    #     path: '{{ _tmp_test_dir.path }}/share/zsh/site-functions/_{{ item }}'
+    #   register: _test_file_stats
+    #   failed_when: not _test_file_stats.stat.exists
+    #   loop:
+    #     - kubectl
+    #     - kubectl1.21
+    #     - kubectl1.21.2
+
+  always:
+    - name: Delete temporary test directory
+      ansible.builtin.file:
+        path: '{{ _tmp_test_dir.path }}'
+        state: absent
+  vars:
+    avinode_devenv_become_for_all: false
+    avinode_devenv_default_group: '{{ ansible_user_gid }}'
+    avinode_devenv_default_owner: '{{ ansible_user_id }}'
+...

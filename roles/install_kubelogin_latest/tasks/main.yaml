@@ -1,0 +1,14 @@
+---
+- name: Get latest release of a public repository
+  community.general.github_release:
+    user: Azure
+    repo: kubelogin
+    action: latest_release
+  register: result
+
+- name: Print return information from the previous task
+  ansible.builtin.debug:
+    var: result
+      #verbosity: 2
+
+...

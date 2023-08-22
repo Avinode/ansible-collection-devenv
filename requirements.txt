@@ -2,6 +2,7 @@ ansible
 ansible-lint
 black
 flake8
+github3.py
 junit-xml
 mypi
 pylint
