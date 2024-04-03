@@ -17,16 +17,16 @@
         state: directory
         suffix: .install-terraform-integration-tests
       register: _tmp_test_dir
-    - set_fact:
+    - ansible.builtin.set_fact:
         avinode_devenv_prefix: '{{ _tmp_test_dir.path }}'
-    - include_role:
+    - ansible.builtin.include_role:
         name: avinode.devenv.baseline
 
     # -------------------------------------------------------------------------
     # Test install
     # -------------------------------------------------------------------------
     - name: Executing `install_terraform_versions` to test installs
-      import_role:
+      ansible.builtin.import_role:
         name: avinode.devenv.install_terraform_versions
       vars:
         install_terraform_versions:
@@ -36,10 +36,14 @@
             - '0.12.28'
             - '0.14.7'
             - '1.0.1'
+            - '1.2.6'
+            - '1.5.7'
           symlinks:
             terraform0.14: '0.14.7'
-            terraform1: '1.0.1'
-            terraform: '1.0.1'
+            terraform1.2: '1.2.6'
+            terraform1.5: '1.5.7'
+            terraform1: '1.5.7'
+            terraform: '1.5.7'
 
     - name: Test installed terraform executables.
       ansible.builtin.command:
@@ -49,12 +53,16 @@
       loop: '{{ _cmd_versions | dict2items }}'
       vars:
         _cmd_versions:
-          terraform: '1.0.1'
+          terraform: '1.5.7'
           terraform0.12.28: '0.12.28'
           terraform0.14: '0.14.7'
           terraform0.14.7: '0.14.7'
-          terraform1: '1.0.1'
+          terraform1: '1.5.7'
+          terraform1.5: '1.5.7'
+          terraform1.2: '1.2.6'
           terraform1.0.1: '1.0.1'
+          terraform1.5.7: '1.5.7'
+          terraform1.2.6: '1.2.6'
 
     - name: Test that Bash completions can be sourced.
       ansible.builtin.shell:
@@ -66,6 +74,8 @@
         - terraform0.14.7
         - terraform1
         - terraform1.0.1
+        - terraform1.2.6
+        - terraform1.5.7
 
     - name: Test that Zsh completions can be sourced.
       ansible.builtin.shell:
@@ -77,25 +87,31 @@
         - terraform0.14.7
         - terraform1
         - terraform1.0.1
+        - terraform1.2.6
+        - terraform1.5.7
 
     # -------------------------------------------------------------------------
     # Test uninstall
     # -------------------------------------------------------------------------
     - name: Executing `install_terraform_versions` to test uninstalls
-      include_role:
+      ansible.builtin.include_role:
         name: avinode.devenv.install_terraform_versions
       vars:
         install_terraform_versions:
           absent:
             - '0.12.28'
             - '0.14.7'
+            - '1.0.1'
           absent_symlinks:
             - terraform0.14
           installed:
-            - '1.0.1'
+            - '1.2.6'
+            - '1.5.7'
           symlinks:
-            terraform1: '1.0.1'
-            terraform: '1.0.1'
+            terraform: '1.5.7'
+            terraform1: '1.5.7'
+            terraform1.5: '1.5.7'
+            terraform1.2: '1.2.6'
 
     # Check that files have been removed.
     - name: Test that the bin files for uninstalled versions have been deleted.
@@ -107,6 +123,7 @@
         - terraform0.12.28
         - terraform0.14
         - terraform0.14.7
+        - terraform1.0.1
 
     # Check that originals are still in place.
     - name: Test that the bin files for the other versions still exist.
@@ -118,7 +135,10 @@
       loop:
         - terraform
         - terraform1
-        - terraform1.0.1
+        - terraform1.5
+        - terraform1.2
+        - terraform1.5.7
+        - terraform1.2.6
 
     # ---- bash ----
     - name: Test that Bash completion files have been removed
@@ -130,6 +150,7 @@
         - terraform0.12.28
         - terraform0.14
         - terraform0.14.7
+        - terraform1.0.1
 
     - name: Test that older Bash completion files still exist
       ansible.builtin.stat:
@@ -139,7 +160,10 @@
       loop:
         - terraform
         - terraform1
-        - terraform1.0.1
+        - terraform1.2
+        - terraform1.2.6
+        - terraform1.5
+        - terraform1.5.7
 
     # ---- Zsh ----
     - name: Test that Zsh completion files have been removed
@@ -151,6 +175,7 @@
         - terraform0.12.28
         - terraform0.14
         - terraform0.14.7
+        - terraform1.0.1
 
     - name: Test that older Zsh completion files still exist
       ansible.builtin.stat:
@@ -160,7 +185,10 @@
       loop:
         - terraform
         - terraform1
-        - terraform1.0.1
+        - terraform1.2
+        - terraform1.2.6
+        - terraform1.5
+        - terraform1.5.7
 
   always:
     - name: Delete temporary test directory
