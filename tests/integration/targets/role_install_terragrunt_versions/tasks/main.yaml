@@ -1,13 +1,11 @@
 ---
-# - name: Ensure required tools are installed on Debian OS family.
-#   ansible.builtin.apt:
-#     cache_valid_time: 86400  # 24 hours
-#     name: [golang, git]
-#     state: present
-#     update_cache: true
-#   ignore_errors: true
-#   become: true
-#   when: ansible_os_family == 'Debian'
+- name: Ensure required tools are installed on Debian OS family.
+  ansible.builtin.apt:
+    cache_valid_time: 86400  # 24 hours
+    name: [zsh]
+    state: present
+    update_cache: true
+  when: ansible_os_family == 'Debian'
 
 - name: Ensure required tools are installed on MacOS via MacPorts.
   community.general.macports:
@@ -67,11 +65,13 @@
             - '0.34.1'
             - '0.35.6'
             - '0.38.7'
+            - '0.55.21'
           symlinks:
             terragrunt0.34: '0.34.1'
             terragrunt0.35: '0.35.6'
             terragrunt0.38: '0.38.7'
-            terragrunt: '0.38.7'
+            terragrunt0.55: '0.55.21'
+            terragrunt: '0.55.21'
 
     - name: Test installed Terragrunt executables.
       ansible.builtin.command:
@@ -90,7 +90,8 @@
           terragrunt0.35: '0.35.6'
           terragrunt0.38.7: '0.38.7'
           terragrunt0.38: '0.38.7'
-          terragrunt: '0.38.7'
+          terragrunt0.55: '0.55.21'
+          terragrunt: '0.55.21'
 
     - name: Test that Bash completions can be sourced.
       ansible.builtin.command:
@@ -105,6 +106,8 @@
         - terragrunt0.35
         - terragrunt0.38.7
         - terragrunt0.38
+        - terragrunt0.55.21
+        - terragrunt0.55
         - terragrunt
 
     - name: Test that Zsh completions can be sourced.
@@ -120,6 +123,8 @@
         - terragrunt0.35
         - terragrunt0.38.7
         - terragrunt0.38
+        - terragrunt0.55.21
+        - terragrunt0.55
         - terragrunt
 
     # -------------------------------------------------------------------------
@@ -164,6 +169,8 @@
         - terragrunt0.35
         - terragrunt0.38.7
         - terragrunt0.38
+        - terragrunt0.55.21
+        - terragrunt0.55
         - terragrunt
 
     # ---- bash ----
@@ -190,6 +197,8 @@
         - terragrunt0.35
         - terragrunt0.38.7
         - terragrunt0.38
+        - terragrunt0.55.21
+        - terragrunt0.55
         - terragrunt
 
     # ---- Zsh ----
@@ -216,6 +225,8 @@
         - terragrunt0.35
         - terragrunt0.38.7
         - terragrunt0.38
+        - terragrunt0.55.21
+        - terragrunt0.55
         - terragrunt
 
   always:
