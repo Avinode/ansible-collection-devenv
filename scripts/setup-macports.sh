@@ -109,17 +109,17 @@ log 'Install minimum required MacPorts...'
     coreutils \
     curl-ca-bundle \
     pip_select \
-    py39-certifi \
-    py39-distlib \
-    py39-pip \
-    py39-setuptools \
-    py39-virtualenv \
-    py39-wheel \
-    python39 \
+    py312-certifi \
+    py312-distlib \
+    py312-pip \
+    py312-setuptools \
+    py312-virtualenv \
+    py312-wheel \
+    python312 \
     python3_select \
     python_select
 
-/usr/bin/sudo /opt/local/bin/port select python3 python39
-/usr/bin/sudo /opt/local/bin/port select python python39
-/usr/bin/sudo /opt/local/bin/port select pip3 pip39
-/usr/bin/sudo /opt/local/bin/port select pip pip39
+/usr/bin/sudo /opt/local/bin/port select --set python3 python312
+/usr/bin/sudo /opt/local/bin/port select --set python python312
+/usr/bin/sudo /opt/local/bin/port select --set pip3 pip312
+/usr/bin/sudo /opt/local/bin/port select --set pip pip312

@@ -6,4 +6,7 @@ junit-xml
 mypi
 pylint
 pyright
+pytest
+pytest-forked
+pytest-xdist
 yamllint

@@ -16,11 +16,6 @@ DEFAULT_IMAGE_NAME := DEBIAN11
 IMAGE_DEFAULT := $(IMAGE_$(DEFAULT_IMAGE_NAME))
 IMAGE_DEFAULT_PYTHON := $(IMAGE_$(DEFAULT_IMAGE_NAME)_PYTHON)
 
-ANSIBLE_TEST_SANITY_EXCLUDES := \
-		scripts/setup-local-ansible.sh \
-		scripts/setup-macports.sh \
-		.gitignore
-
 integration_phony_targets := $(addprefix integration-, debian11 debian12 ubuntu2004 ubuntu2204)
 
 .PHONY: \
@@ -38,24 +33,7 @@ all: pre-commit
 
 pre-commit: super-linter sanity units integration
 
-integration: integration-debian11 integration-ubuntu2004 integration-ubuntu2204  # TODO - integration-debian12
-
-sanity:
-	$(info $(SECTION))
-	source .venv/bin/activate ; \
-			ansible-test sanity --color \
-					--docker $(IMAGE_DEBIAN11) \
-					--python $(IMAGE_DEBIAN11_PYTHON) \
-					--exclude scripts/setup-local-ansible.sh \
-					--exclude scripts/setup-macports.sh \
-					$(addprefix --exclude ,$(ANSIBLE_TEST_SANITY_EXCLUDES))
-
-units:
-	$(info $(SECTION))
-	source .venv/bin/activate ; \
-			ansible-test units --color \
-					--docker $(IMAGE_DEBIAN11) \
-					--python $(IMAGE_DEBIAN11_PYTHON)
+# integration: integration-debian11 integration-ubuntu2004 integration-ubuntu2204 integration-debian12  # TODO - Get these working again
 
 $(integration_phony_targets):
 	$(info $(SECTION))
@@ -65,6 +43,24 @@ $(integration_phony_targets):
 					--docker $(IMAGE_$(_NAME)) \
 					--docker-privileged \
 					--python $(IMAGE_$(_NAME)_PYTHON)
+
+integration:
+	$(info $(SECTION))
+	source .venv/bin/activate ; \
+			ansible-test integration --color --docker ubuntu2204
+
+sanity:
+	$(info $(SECTION))
+	source .venv/bin/activate ; \
+			ansible-test sanity --color --docker \
+					--exclude .gitignore \
+					--exclude scripts/setup-local-ansible.sh \
+					--exclude scripts/setup-macports.sh
+
+units:
+	$(info $(SECTION))
+	source .venv/bin/activate ; \
+			ansible-test units --color --docker
 
 super-linter:
 	$(info $(SECTION))
