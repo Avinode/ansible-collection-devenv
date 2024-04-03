@@ -54,18 +54,37 @@
 
 
   # -- Kubernetes --
+  # Information can be found in:
+  #   - https://kubernetes.io/blog/2023/08/15/pkgs-k8s-io-introduction/
+  #   - https://kubernetes.io/blog/2023/08/31/legacy-package-repository-deprecation/
 - name: Ensure Kubernetes's GPG key for Apt
   ansible.builtin.apt_key:
-    id: '0xB53DC80D13EDEF05'
-    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    id: '0x234654DA9A296436'
+    url: https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key
     state: present
   become: '{{ avinode_devenv_become_for_all }}'
   notify: update_apt_cache
   when: avinode_apt_sources_kubernetes
 
-- name: Ensure Kubernetes's Apt repository
+- name: Ensure Kubernetes's v1.29 Apt repository
   ansible.builtin.apt_repository:
-    repo: "deb https://apt.kubernetes.io/ kubernetes-xenial main"
+    repo: "deb https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /"
+    state: present
+  become: '{{ avinode_devenv_become_for_all }}'
+  notify: update_apt_cache
+  when: avinode_apt_sources_kubernetes
+
+- name: Ensure Kubernetes's v1.28 Apt repository
+  ansible.builtin.apt_repository:
+    repo: "deb https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /"
+    state: present
+  become: '{{ avinode_devenv_become_for_all }}'
+  notify: update_apt_cache
+  when: avinode_apt_sources_kubernetes
+
+- name: Ensure Kubernetes's v1.27 Apt repository
+  ansible.builtin.apt_repository:
+    repo: "deb https://pkgs.k8s.io/core:/stable:/v1.27/deb/ /"
     state: present
   become: '{{ avinode_devenv_become_for_all }}'
   notify: update_apt_cache
