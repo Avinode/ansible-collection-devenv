@@ -17,14 +17,14 @@
         state: directory
         suffix: .install-kubectl-integration-tests
       register: _tmp_test_dir
-    - set_fact:
+    - ansible.builtin.set_fact:
         avinode_devenv_prefix: '{{ _tmp_test_dir.path }}'
         _saved_avinode_devenv_go_arch: '{{ avinode_devenv_go_arch }}'
         avinode_devenv_go_arch:
           - 'arm64'
           - 'amd64'
         avinode_devenv_install_kubectl_skip_completion: true # Can not execute the binary that has wrong architecture
-    - include_role:
+    - ansible.builtin.include_role:
         name: avinode.devenv.baseline
 
     # -------------------------------------------------------------------------
@@ -61,7 +61,7 @@
       ansible.builtin.file:
         path: '{{ _tmp_test_dir.path }}'
         state: absent
-    - set_fact:
+    - ansible.builtin.set_fact:
         avinode_devenv_go_arch: '{{ _saved_avinode_devenv_go_arch }}'
         _saved_avinode_devenv_go_arch:
         avinode_devenv_install_kubectl_skip_completion:

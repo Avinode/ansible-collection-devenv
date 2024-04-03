@@ -8,7 +8,7 @@
 
 - name: Check kubectl version ({{ version }})
   changed_when: false
-  command: '{{ bin_file }} version --client=true --short=true'
+  command: '{{ bin_file }} version --client=true'
   failed_when: false
   register: _kubectl_version
   tags:
@@ -37,7 +37,7 @@
       tags:
         - avinode_devenv_install_kubectl
 
-    - name: Could fetech kubectl checksum ({{ version }})
+    - name: Could fetch kubectl checksum ({{ version }})
       fail:
         msg: "Could not find file to download for kubectl checksum {{ version }}."
       when: not _kubectl_checksum.changed
@@ -69,7 +69,7 @@
       tags:
         - avinode_devenv_install_kubectl
 
-    - name: Could fetech kubectl ({{ version }})
+    - name: Could fetch kubectl ({{ version }})
       fail:
         msg: "Could not find file to download for kubectl {{ version }}."
       when: not (_kubectl.changed | d(false))
@@ -83,7 +83,7 @@
         state: absent
       changed_when: false
     - name: Unset variables # Need to be cleared to not interfere with next invokation
-      set_fact:
+      ansible.builtin.set_fact:
         _kubectl:
         _kubectl_checksum:
         _tmp_file:

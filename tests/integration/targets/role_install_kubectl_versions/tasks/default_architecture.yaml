@@ -32,13 +32,13 @@
         install_kubectl_versions:
           absent: []
           installed:
-            - '1.19.12'
-            - '1.21.2'
+            - '1.28.7'
+            - '1.29.2'
           absent_symlinks: []
           symlinks:
-            kubectl: '1.21.2'
-            kubectl1.19: '1.19.12'
-            kubectl1.21: '1.21.2'
+            kubectl: '1.29.2'
+            kubectl1.28: '1.28.7'
+            kubectl1.29: '1.29.2'
 
     - name: Test installed kubectl executables.
       ansible.builtin.command:
@@ -48,11 +48,11 @@
       loop: '{{ _cmd_versions | dict2items }}'
       vars:
         _cmd_versions:
-          kubectl: '1.21.2'
-          kubectl1.19: '1.19.12'
-          kubectl1.19.12: '1.19.12'
-          kubectl1.21: '1.21.2'
-          kubectl1.21.2: '1.21.2'
+          kubectl: '1.29.2'
+          kubectl1.28: '1.28.7'
+          kubectl1.28.7: '1.28.7'
+          kubectl1.29: '1.29.2'
+          kubectl1.29.2: '1.29.2'
 
     # ---- Bash ----
     - name: Test that Bash completion can be sourced.
@@ -68,10 +68,10 @@
       register: _completion_line_check
       failed_when: (_completion_line_check is changed) or (_completion_line_check is failed)
       loop:
-        - kubectl1.19
-        - kubectl1.19.12
-        - kubectl1.21
-        - kubectl1.21.2
+        - kubectl1.28
+        - kubectl1.28.7
+        - kubectl1.29
+        - kubectl1.29.2
 
     # ---- Zsh ----
     - name: Test that Zsh completions can be sourced.
@@ -83,10 +83,10 @@
         executable: /bin/zsh
       loop:
         - kubectl
-        - kubectl1.19
-        - kubectl1.19.12
-        - kubectl1.21
-        - kubectl1.21.2
+        - kubectl1.28
+        - kubectl1.28.7
+        - kubectl1.29
+        - kubectl1.29.2
 
 
     # -------------------------------------------------------------------------
@@ -98,14 +98,14 @@
       vars:
         install_kubectl_versions:
           absent:
-            - '1.19.12'
+            - '1.28.7'
           installed:
-            - '1.21.2'
+            - '1.29.2'
           absent_symlinks:
-            - kubectl1.19
+            - kubectl1.28
           symlinks:
-            kubectl: '1.21.2'
-            kubectl1.21: '1.21.2'
+            kubectl: '1.29.2'
+            kubectl1.29: '1.29.2'
 
     - name: Test that the bin files for uninstalled versions have been deleted.
       ansible.builtin.stat:
@@ -113,8 +113,8 @@
       register: _test_file_stats
       failed_when: _test_file_stats.stat.exists
       loop:
-        - kubectl1.19
-        - kubectl1.19.12
+        - kubectl1.28
+        - kubectl1.28.7
 
     - name: Test that the bin files for the other versions still exist.
       ansible.builtin.stat:
@@ -124,8 +124,8 @@
         not (_test_file_stats.stat.exists and _test_file_stats.stat.executable)
       loop:
         - kubectl
-        - kubectl1.21
-        - kubectl1.21.2
+        - kubectl1.29
+        - kubectl1.29.2
 
     # ---- bash ----
     - name: Test that Bash kubectl completion lines have been removed
@@ -137,8 +137,8 @@
       register: _completion_line_check
       failed_when: (_completion_line_check is changed) or (_completion_line_check is failed)
       loop:
-        - kubectl1.19
-        - kubectl1.19.12
+        - kubectl1.28
+        - kubectl1.28.7
 
     - name: Test that older Bash kubectl completion lines still exist
       ansible.builtin.lineinfile:
@@ -149,8 +149,8 @@
       register: _completion_line_check
       failed_when: (_completion_line_check is changed) or (_completion_line_check is failed)
       loop:
-        - kubectl1.21
-        - kubectl1.21.2
+        - kubectl1.29
+        - kubectl1.29.2
 
     # ---- Zsh ----
     - name: Test that Zsh kubectl completion files have been removed
@@ -159,8 +159,8 @@
       register: _test_file_stats
       failed_when: _test_file_stats.stat.exists
       loop:
-        - kubectl1.19
-        - kubectl1.19.12
+        - kubectl1.28
+        - kubectl1.28.7
 
     - name: Test that older Zsh kubectl completion files still exist
       ansible.builtin.stat:
@@ -169,8 +169,8 @@
       failed_when: not _test_file_stats.stat.exists
       loop:
         - kubectl
-        - kubectl1.21
-        - kubectl1.21.2
+        - kubectl1.29
+        - kubectl1.29.2
 
   always:
     - name: Delete temporary test directory
