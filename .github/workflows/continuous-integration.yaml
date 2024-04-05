@@ -15,29 +15,21 @@ jobs:
     name: Super Linter
     runs-on: ubuntu-latest
     steps:
-      # jscpd:ignore-start
-      - uses: actions/checkout@v3
-        with:
-          path: ${{ env.project_dir }}
-
-      - name: Install latest version of Ansible in a Python venv
-        working-directory: ${{ env.project_dir }}
-        run: scripts/setup-local-ansible.sh
-      # jscpd:ignore-end
-
+      - uses: actions/checkout@v4
       - name: Super Lint the Code Base
-        uses: docker://ghcr.io/github/super-linter:slim-v4
+        uses: super-linter/super-linter@v5
         env:
           DEFAULT_BRANCH: main
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Thank you: https://github.com/github/super-linter/issues/157#issuecomment-648850330
-          PYTHONPATH: /github/workspace/${{ env.project_dir }}/.venv/lib/python3.8/site-packages
+          # TODO - Delete the `VALIDATE_GITHUB_ACTIONS` line once `macos-14` is
+          # recognized by `actionlinter` in `super-linter`.
+          VALIDATE_GITHUB_ACTIONS: false
 
   common-checks:
     name: Common checks (sanity, unit, integration tests)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           path: ${{ env.project_dir }}
 
@@ -73,7 +65,7 @@ jobs:
           - macos-13
           - macos-14
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           path: ${{ env.project_dir }}
 

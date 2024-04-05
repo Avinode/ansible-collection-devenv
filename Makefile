@@ -64,15 +64,14 @@ units:
 
 super-linter:
 	$(info $(SECTION))
-	# TODO - Turn `GITHUB_ACTIONS` back on once it is working again.
+	# TODO - Turn `VALIDATE_GITHUB_ACTIONS` back on once it is working again.
 	docker run \
 			--rm \
 			--env RUN_LOCAL=true \
-			--env PYTHONPATH=/tmp/lint/.venv/lib/python3.8/site-packages \
 			--env VALIDATE_GITHUB_ACTIONS=false \
 			--volume $$PWD:/tmp/lint \
 			--name ansible-playbooks-avinode-super-linter-$(BUILD_RAND_NAME) \
-			github/super-linter:slim-v4
+			ghcr.io/super-linter/super-linter:v5
 
 
 #------------------------------------------------------------------------------
