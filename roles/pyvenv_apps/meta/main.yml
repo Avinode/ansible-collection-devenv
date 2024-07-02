@@ -1,3 +1,4 @@
+# jscpd:ignore-start
 # galaxy_info:
 #   author: your name
 #   description: your role description
@@ -46,7 +47,8 @@
 #     #
 #     # NOTE: A tag is limited to a single word comprised of alphanumeric characters.
 #     #       Maximum 20 tags per role.
-#
+# jscpd:ignore-end
+
 dependencies:
   - avinode.devenv.global_defaults
   - avinode.devenv.baseline

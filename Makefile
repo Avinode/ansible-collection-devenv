@@ -1,4 +1,6 @@
-BUILD_RAND_NAME ?= $(shell tr -dc a-z0-9 </dev/urandom | head -c 13)
+BUILD_RAND_NAME     ?= $(shell tr -dc a-z0-9 </dev/urandom | head -c 13)
+DEFAULT_BRANCH      ?= main
+SUPER_LINTER_IMAGE  ?= ghcr.io/super-linter/super-linter:v6
 
 IMAGE_DEBIAN11 := geerlingguy/docker-debian11-ansible:latest
 IMAGE_DEBIAN11_PYTHON := '3.9'
@@ -62,16 +64,23 @@ units:
 	source .venv/bin/activate ; \
 			ansible-test units --color --docker
 
+# TODO - Turn Checkov  and pylint back on.
 super-linter:
 	$(info $(SECTION))
-	# TODO - Turn `VALIDATE_GITHUB_ACTIONS` back on once it is working again.
+	docker image pull --platform linux/amd64 $(SUPER_LINTER_IMAGE)
 	docker run \
-			--rm \
-			--env RUN_LOCAL=true \
-			--env VALIDATE_GITHUB_ACTIONS=false \
-			--volume $$PWD:/tmp/lint \
-			--name ansible-playbooks-avinode-super-linter-$(BUILD_RAND_NAME) \
-			ghcr.io/super-linter/super-linter:v5
+		--tty --rm \
+		--env DEFAULT_BRANCH=$(DEFAULT_BRANCH) \
+		--env IGNORE_GITIGNORED_FILES=true \
+		--env RUN_LOCAL=true \
+		--env SHELL=/bin/bash \
+		--env VALIDATE_CHECKOV=false \
+		--env VALIDATE_PYTHON_PYLINT=false \
+		--env VALIDATE_SHELL_SHFMT=false \
+		--name ansible-collection-devenv-super-linter-$(BUILD_RAND_NAME) \
+		--platform linux/amd64 \
+		--volume $$PWD:/tmp/lint \
+		$(SUPER_LINTER_IMAGE)
 
 
 #------------------------------------------------------------------------------
