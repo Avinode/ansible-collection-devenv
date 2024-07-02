@@ -91,23 +91,23 @@
   when: avinode_apt_sources_kubernetes
 
 
-  # -- NodeJS 14 --
+  # -- NodeJS 20 --
 - name: Ensure Node.js's GPG key for Apt
   ansible.builtin.apt_key:
-    id: '0x1655A0AB68576280'
-    url: https://deb.nodesource.com/gpgkey/nodesource.gpg.key
+    id: '0x2F59B5F99B1BE0B4'
+    url: 'https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key'
     state: present
   become: '{{ avinode_devenv_become_for_all }}'
   notify: update_apt_cache
-  when: avinode_apt_sources_nodejs14
+  when: avinode_apt_sources_nodejs20
 
-- name: Ensure Node.js's 14.x Apt repository
+- name: Ensure Node.js's 20.x Apt repository
   ansible.builtin.apt_repository:
-    repo: "deb https://deb.nodesource.com/node_14.x {{ _packages_distribution_short_name }} main"
+    repo: "deb https://deb.nodesource.com/node_20.x nodistro main"
     state: present
   become: '{{ avinode_devenv_become_for_all }}'
   notify: update_apt_cache
-  when: avinode_apt_sources_nodejs14
+  when: avinode_apt_sources_nodejs20
 
 
   # -- Yarn --
