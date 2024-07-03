@@ -139,15 +139,13 @@
   notify: update_apt_cache
   when:
     - avinode_apt_sources_hashicorp
-    - ansible_architecture in ['x86_64', 'amd64']
 
 - name: Ensure Hashicorp Apt repository
   ansible.builtin.apt_repository:
-    repo: "deb [arch=amd64] https://apt.releases.hashicorp.com {{ _packages_distribution_short_name }} main"
+    repo: "deb https://apt.releases.hashicorp.com {{ _packages_distribution_short_name }} main"
     state: present
   become: '{{ avinode_devenv_become_for_all }}'
   notify: update_apt_cache
   when:
     - avinode_apt_sources_hashicorp
-    - ansible_architecture in ['x86_64', 'amd64']
 ...
