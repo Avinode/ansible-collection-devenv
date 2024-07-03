@@ -2,7 +2,7 @@
 avinode_apt_sources_hashicorp: true
 avinode_apt_sources_helm: true
 avinode_apt_sources_kubernetes: true
-avinode_apt_sources_nodejs14: true
+avinode_apt_sources_nodejs20: true
 avinode_apt_sources_yarn: true
 
 avinode_apt_sources_update_cache_on_change: true

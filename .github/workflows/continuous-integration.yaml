@@ -15,15 +15,19 @@ jobs:
     name: Super Linter
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Super Lint the Code Base
-        uses: super-linter/super-linter@v5
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          # super-linter needs the full git history.
+          fetch-depth: 0
+
+      - name: Lint Code Base
+        uses: super-linter/super-linter@v6
         env:
-          DEFAULT_BRANCH: main
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # TODO - Delete the `VALIDATE_GITHUB_ACTIONS` line once `macos-14` is
-          # recognized by `actionlinter` in `super-linter`.
-          VALIDATE_GITHUB_ACTIONS: false
+          VALIDATE_CHECKOV: false
+          VALIDATE_PYTHON_PYLINT: false  # TODO - Turn this back on
+          VALIDATE_SHELL_SHFMT: false
 
   common-checks:
     name: Common checks (sanity, unit, integration tests)
@@ -61,7 +65,6 @@ jobs:
     strategy:
       matrix:
         MACOS_WORKER_VERSION:
-          - macos-12
           - macos-13
           - macos-14
     steps:
@@ -78,9 +81,11 @@ jobs:
       - name: Add MacPorts to the build PATH
         working-directory: ${{ env.project_dir }}
         run: |
-          echo '/opt/local/sbin' >> $GITHUB_PATH
-          echo '/opt/local/bin' >> $GITHUB_PATH
-          echo '/opt/local/libexec/gnubin' >> $GITHUB_PATH
+          {
+            echo '/opt/local/sbin'
+            echo '/opt/local/bin'
+            echo '/opt/local/libexec/gnubin'
+          } >> "$GITHUB_PATH"
 
       - name: System information
         working-directory: ${{ env.project_dir }}

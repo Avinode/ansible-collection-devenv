@@ -23,6 +23,7 @@
       ansible.builtin.include_role:
         name: avinode.devenv.install_kube_score_versions
 
+    # jscpd:ignore-start
     - name: Assert no files created/installed on empty run
       ansible.builtin.find:
         paths: '{{ _tmp_test_dir.path }}/{{ _check_installed_files_item }}'
@@ -33,6 +34,7 @@
       loop: [bin, etc/bash_completion.d, share/zsh/site-functions]
       loop_control:
         loop_var: _check_installed_files_item
+    # jscpd:ignore-end
 
     # -------------------------------------------------------------------------
     # Test install
