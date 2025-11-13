@@ -37,8 +37,8 @@
 # -- Helm --
 - name: Ensure Helms's GPG key for Apt
   ansible.builtin.apt_key:
-    id: '0x294AC4827C1A168A'
-    url: https://baltocdn.com/helm/signing.asc
+    id: '0x62BA89D07698DBC6'
+    url: https://packages.buildkite.com/helm-linux/helm-debian/gpgkey
     state: present
   become: '{{ avinode_devenv_become_for_all }}'
   notify: update_apt_cache
@@ -46,7 +46,7 @@
 
 - name: Ensure Helm's Apt repository
   ansible.builtin.apt_repository:
-    repo: "deb https://baltocdn.com/helm/stable/debian/ all main"
+    repo: "deb https://packages.buildkite.com/helm-linux/helm-debian/any/ any main"
     state: present
   become: '{{ avinode_devenv_become_for_all }}'
   notify: update_apt_cache
