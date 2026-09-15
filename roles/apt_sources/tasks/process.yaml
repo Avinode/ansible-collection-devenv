@@ -132,7 +132,7 @@
   # -- HashiCorp --
 - name: Ensure HashiCorp's GPG key for Apt
   ansible.builtin.apt_key:
-    id: '0xAA16FCBCA621E701'
+    id: '0xFC9CA96ACA026560'
     url: https://apt.releases.hashicorp.com/gpg
     state: present
   become: '{{ avinode_devenv_become_for_all }}'
